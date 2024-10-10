@@ -1,0 +1,24 @@
+<html>
+    <head>
+	<title>W02: Task 2</title>
+    </head>
+    <body>
+        <h1> Vector coordonnates diplay </h1>
+        <div>
+            <h2>The cordonnates of the vector are :</h2>
+            <br>
+            <span id="min"></span>
+            <br>
+            <span id="max"></span>
+            <br>
+            <span id="mid"></span>
+        </div>
+	<script src = "vec3.js"></script>
+    <script>
+        const vector = new Vec3(5,4,8);
+        document.getElementById("min").innerHTML = `min : ${vector.min()}`;
+        document.getElementById("max").innerHTML = `max : ${vector.max()}`;
+        document.getElementById("mid").innerHTML = `mid : ${vector.mid()}`;
+	</script>
+    </body>
+</html>

@@ -1,0 +1,76 @@
+<html>
+    <head>
+	<title>W02: Task 3</title>
+    </head>
+    <body>
+        <h1> Triangle aera calculator </h1>
+        <div>
+            <h2>Register the vertices the triangle</h2>
+            <br>
+            <div>
+                <label for="x1">x1 :</label>
+                <input type="number" id="x1" name="add the x coordonnate">
+                <label for="y1">y1 :</label>
+                <input type="number" id="y1" name="add the y coordonnate">
+                <label for="z1">z1 :</label>
+                <input type="number" id="z1" name="add the z coordonnate">
+            </div>
+            <br>
+            <div>
+                <label for="x2">x2 :</label>
+                <input type="number" id="x2" name="add the x coordonnate">
+                <label for="y2">y2 :</label>
+                <input type="number" id="y2" name="add the y coordonnate">
+                <label for="z2">z2 :</label>
+                <input type="number" id="z2" name="add the z coordonnate">
+            </div>
+            <br>
+            <div>
+                <label for="x3">x3 :</label>
+                <input type="number" id="x3" name="add the x coordonnate">
+                <label for="y3">y3 :</label>
+                <input type="number" id="y3" name="add the y coordonnate">
+                <label for="z3">z3 :</label>
+                <input type="number" id="z3" name="add the z coordonnate">
+            </div>
+            <br>
+            <span id="res"></span>
+            <br>
+            <input type="button" onclick="submition()" value="Submit"/>
+        </div>
+	<script src = "vec3.js"></script>
+    <script>
+        const TriangleArea = (s1, s2, s3) => {
+            console.log(s1,s2,s3);
+            console.log(s2.sub(s1));
+            console.log(s3.sub(s1));
+            console.log(s2.sub(s1).cross(s3.sub(s1)));
+            console.log(s2.sub(s1).cross(s3.sub(s1)).length()*0.5);
+            return s2.sub(s1).cross(s3.sub(s1)).length();
+        };
+
+        const submition = () => {
+            const valid = 
+                document.getElementById("x1").value && 
+                document.getElementById("y1").value && 
+                document.getElementById("z1").value && 
+                document.getElementById("x2").value && 
+                document.getElementById("y2").value && 
+                document.getElementById("z2").value && 
+                document.getElementById("x3").value && 
+                document.getElementById("y3").value && 
+                document.getElementById("z3").value;
+
+            if (valid){
+                const s1 = new Vec3(document.getElementById("x1").value, document.getElementById("y1").value, document.getElementById("z1").value);
+                const s2 = new Vec3(document.getElementById("x2").value, document.getElementById("y2").value, document.getElementById("z2").value);
+                const s3 = new Vec3(document.getElementById("x3").value, document.getElementById("y3").value, document.getElementById("z3").value);
+                
+                document.getElementById("res").innerHTML = `The area of the triangle is : ${TriangleArea(s1,s2,s3)} m²`;
+            }else{
+                window.alert("ERROR : please fill all the inputs using integers");
+            }
+        };
+	</script>
+    </body>
+</html>
