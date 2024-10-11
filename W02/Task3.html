@@ -41,11 +41,6 @@
 	<script src = "vec3.js"></script>
     <script>
         const TriangleArea = (s1, s2, s3) => {
-            console.log(s1,s2,s3);
-            console.log(s2.sub(s1));
-            console.log(s3.sub(s1));
-            console.log(s2.sub(s1).cross(s3.sub(s1)));
-            console.log(s2.sub(s1).cross(s3.sub(s1)).length()*0.5);
             return s2.sub(s1).cross(s3.sub(s1)).length()*0.5;
         };
 
