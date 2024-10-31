@@ -1,21 +1,51 @@
 <html>
     <head>
-        <title>W04_Task 1 : data visualization : Circle </title>
+        <title>W04_Task 1 : data visualization : Circle : Japan map with population</title>
     </head>
     <body>
-	<script src="https://d3js.org/d3.v4.min.js"></script>
+	<script src="https://d3js.org/d3.v6.min.js"></script>
 	<script>
-	 var svg = d3.select("body").append("svg");
-	 d3.csv("https://vizlab-kobe-lecture.github.io/InfoVis2021/W04/data.csv", draw );
-	 function draw(data){
-	     svg.selectAll("circle")
-		.data(data)
-	        .enter()
-	        .append("circle")
-	        .attr("cx", function(d){ return d.x; })
-	        .attr("cy", function(d){ return d.y; })
-	        .attr("r", function(d){ return d.r; })
+	 var svg = d3.select("body").append("svg")
+
+	 ;
+
+	 let max_lat;
+	 let max_lng;
+	 let max_pop;
+
+	 let min_lat;
+	 let min_lng;
+	 let min_pop;
+
+	 let init_val = (data) => {
+		console.log("start init_val");
+		this.max_lat = data.reduce((a, b) => Math.max(a, b.lat), 0);
+		this.max_lng = data.reduce((a, b) => Math.max(a, b.lng), 0);
+		this.max_pop = data.reduce((a, b) => Math.max(a, b.population_proper), 0);
+
+		this.min_lat = data.reduce((a, b) => Math.min(a, b.lat), 0);
+		this.min_lng = data.reduce((a, b) => Math.min(a, b.lng), 0);
+		this.min_pop = data.reduce((a, b) => Math.min(a, b.population_proper), 0);
+
+		console.log("end init_val");
 	 };
+
+	 function draw(data,min_lat,min_lng,min_pop){
+		svg.selectAll("circle").data(data)
+		.enter()
+		.append("circle")
+		.attr("cy", function(d){ console.log(`latitude : ${d.lat}`); return Math.round(d.lat-min_lat); })
+		.attr("cx", function(d){ console.log(`longitude : ${d.lng}`);return Math.round(d.lng-min_lng); })
+		.attr("r", function(d){ console.log(`population : ${d.population_proper}`);return /* Math.round(d.population_proper-min_pop) +*/1; })
+	 };
+
+	 d3.csv("https://amfarwati.github.io/InfoVis2024_Farwati/W04/w04_task1.csv")
+	 .then((data) => {
+		init_val(data);
+		draw(data, this.min_lat, this.min_lng, this.min_pop);
+	 })
+	 .catch((error) => {console.log(error)});
+
 	</script>
     </body>
 </html>
