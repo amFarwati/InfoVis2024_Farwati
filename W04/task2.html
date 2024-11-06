@@ -1,0 +1,44 @@
+<html>
+    <head>
+        <title>W04_Task 2 : data visualization : Barchart : Japan map with population</title>
+    </head>
+    <body>
+	<script src="https://d3js.org/d3.v6.min.js"></script>
+	<script>
+
+	 let data;
+     let padding = 10;
+     let height = 20;
+
+	 var svg = d3.select("body").append("svg");
+
+	 function draw(data){
+		//add points
+		svg.selectAll("rect").data(data)
+        .enter()
+        .append("rect")
+        .attr("x", this.padding)
+        .attr("y", function(d,i){ return this.padding + i * ( this.height + this.padding ); })
+        .attr("width", function(d){ return d.proper_population; })
+        .attr("height", this.height)
+        .style("fill", function(d){ return d.color; });
+
+		//add points
+		svg.selectAll("text").data(data)
+		.enter()
+		.append("text")
+		.attr("x", function(d){ return norm_val(d.lng,'LNG'); })
+		.attr("y", function(d){ return norm_val(d.lat,'LAT'); })
+		.attr("class", "label")
+		.text(function(d){ return d.city; })
+	 };
+
+	 d3.csv("https://amfarwati.github.io/InfoVis2024_Farwati/W04/w04_task2.csv")
+	 .then((data) => {
+		draw(data);
+	 })
+	 .catch((error) => {console.log(error)});
+
+	</script>
+    </body>
+</html>
