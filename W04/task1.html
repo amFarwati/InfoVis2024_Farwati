@@ -3,7 +3,7 @@
         <title>W04_Task 1 : data visualization : Circle : Japan map with population</title>
     </head>
     <body>
-		<input type="button" onclick="input_update('SHOW_POP')" value="SHOW_POP"/>
+		<input type="button" onclick="input_update('SHOW_POP')" value="Show population (normalized by the max population of Tokyo)"/>
 
 	<script src="https://d3js.org/d3.v6.min.js"></script>
 	<style>
@@ -47,7 +47,7 @@
 		this.min_pop = data.reduce((a, b) => Math.min(a, b.population_proper), Infinity);
 
 		this.lat_lng_offset = 20;
-	 	this.zoom = 30;
+	 	this.zoom = 60;
 		this.show_pop = false;
 
 		this.svg	 	
