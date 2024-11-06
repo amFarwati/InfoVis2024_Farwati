@@ -12,16 +12,22 @@
      let height;
 
      let pop_sum;
+     let sorted = false;
 
 	 var svg = d3.select("body").append("svg")
      .attr("height", 500)
      .attr("width", 1000);
 
      const sort_update = () => {
-            let sorted_data = this.data.sort((a, b) => b.population_proper - a.population_proper);
-            console.log(sorted_data);
+            this.sorted = !this.sorted;
             svg.selectAll("*").remove()
-            draw(sorted_data);
+            if (this.sorted){
+                let sorted_data = this.data.sort((a, b) => b.population_proper - a.population_proper);
+                draw(sorted_data);
+            }else{
+                draw(this.data);
+            }
+
     }
 
 	 function draw(data){
