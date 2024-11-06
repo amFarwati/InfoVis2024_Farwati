@@ -3,38 +3,59 @@
         <title>W04_Task 2 : data visualization : Barchart : Japan map with population</title>
     </head>
     <body>
+    <input type="button" onclick="sort_update()" value="Sort by population"/>
 	<script src="https://d3js.org/d3.v6.min.js"></script>
 	<script>
 
 	 let data;
-     let padding = 10;
-     let height = 20;
+     let padding;
+     let height;
 
-	 var svg = d3.select("body").append("svg");
+     let pop_sum;
+
+	 var svg = d3.select("body").append("svg")
+     .attr("height", 500)
+     .attr("width", 1000);
+
+     const sort_update = () => {
+            let sorted_data = this.data.sort((a, b) => b.population_proper - a.population_proper);
+            console.log(sorted_data);
+            svg.selectAll("*").remove()
+            draw(sorted_data);
+    }
 
 	 function draw(data){
 		//add points
-		svg.selectAll("rect").data(data)
+		this.svg.selectAll("rect").data(data)
         .enter()
         .append("rect")
         .attr("x", this.padding)
-        .attr("y", function(d,i){ return this.padding + i * ( this.height + this.padding ); })
-        .attr("width", function(d){ return d.proper_population; })
+        .attr("y", (d, i) => this.padding + i * (this.height + this.padding))
+        .attr("width", d => d.population_proper*1000/this.pop_sum)
         .attr("height", this.height)
-        .style("fill", function(d){ return d.color; });
+        .style("fill", d => d.color)
+        .text(d => d.city);
 
-		//add points
-		svg.selectAll("text").data(data)
+        //add labels
+        this.svg.selectAll("text").data(data)
 		.enter()
 		.append("text")
-		.attr("x", function(d){ return norm_val(d.lng,'LNG'); })
-		.attr("y", function(d){ return norm_val(d.lat,'LAT'); })
-		.attr("class", "label")
-		.text(function(d){ return d.city; })
+		.attr("x", d => 2*this.padding + d.population_proper*1000/this.pop_sum )
+		.attr("y", (d, i) => this.padding + i * (this.height + this.padding)+ this.height / 2)
+		.attr("dy", ".35em")
+		.text(function(d){ return d.city+' (pop = ' + d.population_proper + ' people)'; })
+        .style("fill", "black")
+        .style("font-size", "12px");
+
 	 };
 
 	 d3.csv("https://amfarwati.github.io/InfoVis2024_Farwati/W04/w04_task2.csv")
 	 .then((data) => {
+        this.data = data;
+        this.padding = 10;
+        this.height = 20;
+        this.pop_sum = data.reduce((a, b) => a + parseInt(b.population_proper), 0);
+
 		draw(data);
 	 })
 	 .catch((error) => {console.log(error)});
