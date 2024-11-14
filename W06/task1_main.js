@@ -75,11 +75,13 @@ class ScatterPlot {
 
         const xmin = d3.min( self.data, d => d.population_proper );
         const xmax = d3.max( self.data, d => d.population_proper );
-        self.xscale.domain( [xmin, xmax] );
+        const x_margin = (xmax - xmin) * 0.025;
+        self.xscale.domain( [xmin-x_margin, x_margin+xmax] );
 
         const ymin = d3.min( self.data, d => d.population );
         const ymax = d3.max( self.data, d => d.population );
-        self.yscale.domain( [ymin, ymax] );
+        const y_margin = (ymax - ymin) * 0.005;
+        self.yscale.domain( [ymin-y_margin, y_margin+ymax] );
 
         self.render();
     }
