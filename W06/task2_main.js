@@ -89,28 +89,81 @@ class ScatterPlot {
     render() {
         let self = this;
 
+        //title
+        self.chart.append("text")
+            .attr("x", self.inner_width / 2)
+            .attr("y", -self.config.margin.top / 2)
+            .attr("class", "title")
+            .text("Population fct of Proper Population for major japanese cities");
+
+        //points
         self.chart.selectAll("circle")
             .data(self.data)
             .enter()
             .append("circle")
             .attr("cx", d => self.xscale( d.population_proper ) )
             .attr("cy", d => self.yscale( d.population ) )
-            .attr("r",  5 )
+            .attr("r", 5 )
             .style("fill", "lightgrey");
 
+        //point labels
         self.chart.selectAll("text")
             .data(self.data)
             .enter()
             .append("text")
+            .attr("class", "label")
             .attr("x",  d => self.xscale( d.population_proper ) )
             .attr("y", d => self.yscale( d.population ) )
-            .attr("class", "label")
-            .text(function(d){ return d.city; })
+            .text(function(d){ return d.city; });
+
+        //y-axis label
+        self.chart.append('text')
+            .attr("class", "axis-label")
+            .attr("transform", "rotate(-90)")
+            .attr("x", -self.inner_height / 2)
+            .attr("y", -self.config.margin.left + 20)
+            .text("Population");
+        //y-axis min and max values
+        self.chart.append("text")
+            .attr("class", "min_value")
+            .attr("transform", "rotate(-90)")
+            .attr("x",  -self.inner_height)
+            .attr("y", -self.config.margin.left +20)
+            .text(d3.min(self.data, d => 'min '+d.population));
+
+        self.chart.append("text")
+            .attr("class", "max_value")
+            .attr("transform", "rotate(-90)")
+            .attr("x",  -50)
+            .attr("y", -self.config.margin.left +20)
+            .text(d3.max(self.data, d => 'max '+d.population));
+            
+        //x-axis label
+        self.chart.append('text')
+            .attr("class", "axis-label")
+            .attr("x", self.inner_width / 2)
+            .attr("y", self.inner_height + self.config.margin.bottom - 10)
+            .text("Population Proper");
+
+        //x-axis min and max values
+        self.chart.append("text")
+            .attr("class", "min_value")
+            .attr("x", 0)
+            .attr("y", 0)
+            .attr('transform', `translate(0, ${self.inner_height + self.config.margin.bottom - 10})`)
+            .text(d3.min(self.data, d => 'min '+d.population_proper));
+
+        self.chart.append("text")
+            .attr("class", "max_value")
+            .attr("x", self.inner_width-50)
+            .attr("y", 0)
+            .attr('transform', `translate(0, ${self.inner_height + self.config.margin.bottom - 10})`)
+            .text(d3.max(self.data, d => 'max '+d.population_proper));
+        
+        self.xaxis_group
+            .call( self.xaxis ); 
 
         self.yaxis_group 
-            .call( self.yaxis );
-
-        self.xaxis_group
-            .call( self.xaxis );
+            .call( self.yaxis ); 
     }
 }
