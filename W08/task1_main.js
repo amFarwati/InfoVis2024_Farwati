@@ -126,7 +126,7 @@ d3.csv("https://amfarwati.github.io/InfoVis2024_Farwati/W08/data.csv")
             height: 256,
             margin: {top:50, right:50, bottom:60, left:50},
             format : '.2s',
-            type : 'linear',
+            type : 'log',
             orientation : 'vertical',
         };
 
