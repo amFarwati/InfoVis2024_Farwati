@@ -1,13 +1,13 @@
-class BarChart {
+class LineChart {
     constructor (config, data){
         this.config = {
             parent: config.parent,
             width: config.width || 256,
             height: config.height || 256,
             margin: config.margin || {top:10, right:10, bottom:10, left:10},
-            orientation: config.orientation || 'horizontal',
-            format: config.format || ',',
-            type : config.type || 'linear',
+            invert_orientation: config.invert_orientation || false,
+            draw_dots : config.draw_dots || false,
+            draw_area : config.draw_area || false,
         }
 
         this.data = data;
@@ -28,113 +28,112 @@ class BarChart {
         self.inner_height = self.config.height - self.config.margin.top - self.config.margin.bottom;
 
         // Initialize axis scales
-        self.valueScale = self.config.type === 'log'? 
-        d3.scaleLog()
-        .range([self.config.orientation === 'horizontal' ? 0 : self.inner_height, self.config.orientation === 'horizontal' ? self.inner_width : 0])
-        : 
-        d3.scaleLinear()
-        .range([self.config.orientation === 'horizontal' ? 0 : self.inner_height, self.config.orientation === 'horizontal' ? self.inner_width : 0]);
+        self.xscale = d3.scaleLinear()
+        .range([0,self.inner_width]);
     
-        self.labelScale = d3.scaleBand()
-            .domain(self.data.map(d => d.label))
-            .range([0, self.config.orientation === 'horizontal' ? self.inner_height : self.inner_width])
-            .paddingInner(0.3);
+        self.yscale = d3.scaleLinear()
+        .range([self.inner_height,0]);
 
-        self.xscale = self.config.orientation === 'horizontal' ? self.valueScale : self.labelScale;
-        self.yscale = self.config.orientation === 'horizontal' ? self.labelScale : self.valueScale;
 
         // Initialize axes
-        if (self.config.orientation === 'horizontal') {
-            self.xaxis = d3.axisBottom( self.xscale )
-                .ticks(5)
-                .tickFormat(d3.format(self.config.format))
-                .tickSizeOuter(0);
+        self.xaxis = d3.axisBottom( self.xscale )
+            .ticks(3)
+            .tickSize(5)
+            .tickPadding(5);
 
-            self.yaxis = d3.axisLeft( self.yscale )
-                .tickSizeOuter(0); 
+        self.yaxis = d3.axisLeft( self.yscale )
+            .ticks(3)
+            .tickSize(5)
+            .tickPadding(5);
+    }
 
+    update() {
+        let self = this;
+        console.log(self.data);
+        console.log(d3.max(self.data, d => d.x),d3.max(self.data, d => d.y ))
+
+        self.xscale.domain([0,d3.max( self.data, d => d.x )]);
+        self.yscale.domain([0,d3.max( self.data, d => d.y )]);
+
+        if (self.config.draw_area){
+            self.line = d3.area()
+            .x( d => {console.log(self.xscale(d.x)) ; return self.xscale(d.x)})
+            .y1( d => {console.log(self.xscale(d.y)) ; return self.yscale(d.y)})
+            .y0( self.config.invert_orientation ? self.inner_height : 0 );
         }else{
-            self.xaxis = d3.axisBottom( self.xscale )
-                .tickSizeOuter(0);
-
-            self.yaxis = d3.axisLeft( self.yscale )
-                .ticks(5)
-                .tickFormat(d3.format(self.config.format))
-                .tickSizeOuter(0);  
+            self.line = d3.line()
+            .x( d => self.xscale(d.x))
+            .y( d => self.yscale(d.y));
         }
+
         // Draw the axis
         self.xaxis_group = self.chart.append('g')
         .attr('transform', `translate(0, ${self.inner_height})`)
         .call( self.xaxis );
 
         self.yaxis_group = self.chart.append('g')
-        .call( self.yaxis );   
-    }
+        .call( self.yaxis );  
 
-    update() {
-        let self = this;
-
-        if (self.config.orientation === 'horizontal') {
-            self.xscale.domain([1, d3.max(self.data, d => d.value)]);
-        } else {
-            self.yscale.domain([1, d3.max(self.data, d => d.value)]);
-        }
-    
         self.render();
     }
 
     render() {
         let self = this;
+            
+        self.chart.append('path')
+        .attr('d', self.line(self.data))
+        .attr('stroke', 'black')
+        .attr('fill', self.config.draw_area ? 'orange' : 'none');
+        
 
-        if (self.config.orientation === 'horizontal') {
-            self.chart.selectAll("rect").data(self.data)
-                .enter()
-                .append("rect")
-                .attr("x", 0)
-                .attr("y", d => self.yscale(d.label))
-                .attr("width", d => self.xscale(d.value))
-                .attr("height", self.yscale.bandwidth());
-        } else {
-            self.chart.selectAll("rect").data(self.data)
-                .enter()
-                .append("rect")
-                .attr("x", d => self.xscale(d.label))
-                .attr("y",  d => self.yscale(d.value))
-                .attr("width", self.xscale.bandwidth())
-                .attr("height", d => self.inner_height - self.yscale(d.value));
+        if (self.config.draw_area) {
+            self.chart.append('path')
+            .attr('fill', 'black');
+        }
+
+        if (self.config.draw_dots){
+            self.chart.selectAll("circle")
+            .data(self.data)
+            .enter()
+            .append("circle")
+            .attr("cx", d => self.xscale( d.x ) )
+            .attr("cy", d => self.yscale( d.y ) )
+            .attr("r",  5 )
+            .style("fill", "black");
         }
     }
 }
 
-d3.csv("https://amfarwati.github.io/InfoVis2024_Farwati/W08/data.csv")
+d3.csv("https://amfarwati.github.io/InfoVis2024_Farwati/W08/data_task2.csv")
 .then( (data) => {
-        let formated_data = data.map( (d) => {return {label : d.city, value :d.population }});
+        let formated_data = data.map( (d) => {return {x : +d.x, y : +d.y }});
 
         let config = {
             parent: '#drawing_region',
             width: 500,
-            height: 256,
+            height: 500,
             margin: {top:50, right:50, bottom:60, left:50},
-            format : '.2s',
-            type : 'log',
-            orientation : 'horizontal',
+            draw_dots : true,
+            draw_area : true,
+            invert_orientation : true,
         };
 
         let config2 = {
             parent: '#drawing_region2',
             width: 500,
-            height: 256,
+            height: 500,
             margin: {top:50, right:50, bottom:60, left:50},
-            format : '.2s',
-            type : 'log',
-            orientation : 'vertical',
+            draw_dots : false,
+            draw_area : false,
+            invert_orientation : false,
         };
 
-        const barChart = new BarChart( config, formated_data );
-        barChart.update();
 
-        const barChart2 = new BarChart( config2, formated_data );
-        barChart2.update();
+        const lineChart = new LineChart( config, formated_data );
+        lineChart.update();
+
+        const lineChart2 = new LineChart( config2, formated_data );
+        lineChart2.update();
 })
 .catch( (error) => {
     window.alert(`ERROR : ${error}`);

@@ -62,13 +62,6 @@ class BarChart {
                 .tickFormat(d3.format(self.config.format))
                 .tickSizeOuter(0);  
         }
-        // Draw the axis
-        self.xaxis_group = self.chart.append('g')
-        .attr('transform', `translate(0, ${self.inner_height})`)
-        .call( self.xaxis );
-
-        self.yaxis_group = self.chart.append('g')
-        .call( self.yaxis );   
     }
 
     update() {
@@ -80,6 +73,14 @@ class BarChart {
             self.yscale.domain([1, d3.max(self.data, d => d.value)]);
         }
     
+        // Draw the axis
+        self.xaxis_group = self.chart.append('g')
+        .attr('transform', `translate(0, ${self.inner_height})`)
+        .call( self.xaxis );
+
+        self.yaxis_group = self.chart.append('g')
+        .call( self.yaxis );   
+        
         self.render();
     }
 
@@ -108,7 +109,7 @@ class BarChart {
 
 d3.csv("https://amfarwati.github.io/InfoVis2024_Farwati/W08/data.csv")
 .then( (data) => {
-        let formated_data = data.map( (d) => {return {label : d.city, value :d.population }});
+        let formated_data = data.map( (d) => {return {label : d.city, value : +d.population }});
 
         let config = {
             parent: '#drawing_region',
@@ -126,7 +127,7 @@ d3.csv("https://amfarwati.github.io/InfoVis2024_Farwati/W08/data.csv")
             height: 256,
             margin: {top:50, right:50, bottom:60, left:50},
             format : '.2s',
-            type : 'log',
+            type : 'linear',
             orientation : 'vertical',
         };
 
