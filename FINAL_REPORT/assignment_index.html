@@ -1,0 +1,85 @@
+<html>
+    <head>
+        <title>CO2 Emissions Visualization</title>
+        <style>
+            body {
+                font-family: 'Segoe UI', system-ui, sans-serif;
+                margin: 0;
+                padding: 20px;
+                background-color: #f5f5f5;
+            }
+            
+            .container {
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 20px;
+                max-width: 1200px;
+                margin: 0 auto;
+            }
+            
+            .visualization-card {
+                background: white;
+                border-radius: 8px;
+                padding: 20px;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            }
+            
+            .card-title {
+                margin: 0 0 15px 0;
+                color: #333;
+                font-size: 1.2em;
+            }
+            
+            #map-container {
+                grid-column: 1 / -1;
+            }
+            
+            #tooltip {
+                position: absolute;
+                opacity: 0;
+                background: white;
+                border-radius: 4px;
+                padding: 8px;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+                font-size: 12px;
+                pointer-events: none;
+            }
+            
+            .tooltip-label {
+                font-weight: 600;
+                color: #666;
+            }
+            
+            .state {
+                transition: fill 0.2s;
+            }
+            
+            .state:hover {
+                fill-opacity: 0.8;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="visualization-card" id="map-container">
+                <h2 class="card-title">CO2 Emissions by State</h2>
+                <svg id="map"></svg>
+            </div>
+            <div class="visualization-card">
+                <h2 class="card-title">Temporal Evolution</h2>
+                <svg id="scatterplot"></svg>
+            </div>
+            <div class="visualization-card">
+                <h2 class="card-title">State Comparison</h2>
+                <svg id="barchart"></svg>
+            </div>
+        </div>
+
+        <script src="https://d3js.org/d3.v6.min.js"></script>
+        <script src="https://d3js.org/topojson.v1.min.js"></script>
+        <script src="scatterPlot.js"></script>
+        <script src="barChart.js"></script>
+        <script src="choroplethMap.js"></script>
+        <script src="assignment_main.js"></script>
+    </body>
+</html>
