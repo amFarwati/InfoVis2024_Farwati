@@ -1,13 +1,21 @@
-class BarChart {
-    constructor (config, data) {
+class StackedBarChart {
+    constructor(config, data = null) {
         this.config = {
             parent: config.parent,
-            width: config.width || 256,
-            height: config.height || 256,
-            margin: config.margin || {top:10, right:10, bottom:10, left:10},
+            width: config.width || 500,
+            height: config.height || 300,
+            margin: config.margin || {top:10, right:10, bottom:50, left:50},
             xlabel: config.xlabel || '',
-            ylabel: config.ylabel || '',
-            cscale: config.cscale
+            ylabel: config.ylabel || 'CO2 Emissions',
+            keys: config.keys || ['CC', 'EC', 'IC', 'RC', 'TC'],
+            colors: config.colors || d3.schemeCategory10,
+            labels: config.labels || {
+                'CC': 'Coal',
+                'EC': 'Electric',
+                'IC': 'Industrial',
+                'RC': 'Residential',
+                'TC': 'Transport'
+            }
         };
         this.data = data;
         this.init();
@@ -28,8 +36,8 @@ class BarChart {
 
         self.xscale = d3.scaleBand()
             .range([0, self.inner_width])
-            .paddingInner(0.2)
-            .paddingOuter(0.1);
+            .paddingInner(0.5)
+            .paddingOuter(0.9);
 
         self.yscale = d3.scaleLinear()
             .range([self.inner_height, 0]);
@@ -38,9 +46,11 @@ class BarChart {
             .ticks(['setosa','versicolor','virginica'])
             .tickSizeOuter(0);
 
-        self.yaxis = d3.axisLeft(self.yscale)
+        self.yaxis = d3.axisLeft( self.yscale )
             .ticks(5)
-            .tickSizeOuter(0);
+            .tickSize(5)
+            .tickPadding(5)
+            .tickFormat(d => d + "%");
 
         self.xaxis_group = self.chart.append('g')
             .attr('transform', `translate(0, ${self.inner_height})`);
@@ -63,42 +73,96 @@ class BarChart {
             .text( self.config.ylabel );
     }
 
-    update() {
+    async updateDataset(data) {
         let self = this;
 
-        const data_map = d3.rollup( self.data, v => v.length, d => d.species );
-        self.aggregated_data = Array.from( data_map, ([key,count]) => ({key,count}) );
-
-        self.cvalue = d => d.key;
-        self.xvalue = d => d.key;
-        self.yvalue = d => d.count;
-
-        const items = self.aggregated_data.map( self.xvalue );
-        self.xscale.domain(items);
-
-        const ymin = 0;
-        const ymax = d3.max( self.aggregated_data, self.yvalue );
-        self.yscale.domain([ymin, ymax]);
-
-        self.render();
+        self.data = await data;
+        self.update();
     }
 
-    render() {
+    update() {
         let self = this;
+        
+        self.svg.selectAll(".legend").remove();
+        self.svg.selectAll('.plot-title').remove();
 
-        self.chart.selectAll("rect")
-            .data(self.aggregated_data)
+        const formattedData = Object.entries(self.data)
+            .filter(([key]) => key !== 'options')
+            .map(([state, values]) => {
+            return {
+                state: state,
+                ...values
+            };
+            });
+
+        console.log(formattedData);
+        const stack = d3.stack()
+            .keys(self.config.keys);
+
+        const stackedData = stack(formattedData);
+
+        self.xscale.domain(formattedData.map(d => d.state));
+        self.yscale.domain([0, 1]);
+
+        self.render(stackedData);
+    }
+
+    render(stackedData) {
+        let self = this;
+        const t = d3.transition().duration(750);
+
+        // Créer les groupes pour chaque série
+        const series = self.chart.selectAll("g.series")
+            .data(stackedData)
+            .join("g")
+            .attr("class", "series")
+            .style("fill", (d, i) => self.config.colors[i]);
+
+        // Créer les rectangles pour chaque barre
+        series.selectAll("rect")
+            .data(d => d)
             .join("rect")
-            .attr("x", d => self.xscale( self.xvalue(d) ) )
-            .attr("y", d => self.yscale( self.yvalue(d) ) )
+            .attr("x", d => self.xscale(d.data.state))
             .attr("width", self.xscale.bandwidth())
-            .attr("height", d => self.inner_height - self.yscale( self.yvalue(d) ))
-            .attr("fill", d => self.config.cscale( self.cvalue(d) ));
+            .transition(t)
+            .attr("y", d => self.yscale(d[1]))
+            .attr("height", d => self.yscale(d[0]) - self.yscale(d[1]));
 
         self.xaxis_group
-            .call(self.xaxis);
+            .transition(t)
+            .call(self.xaxis)
+            .selectAll("text")
+            .style("text-anchor", "center");
 
-        self.yaxis_group
-            .call(self.yaxis);
+        self.yaxis_group.transition(t).call(self.yaxis);
+
+        const legendGroup = self.svg.append("g")
+        .attr("class", "legend")
+        .attr("transform", `translate(${self.config.width - 120}, 20)`);
+
+        const legendItems = legendGroup.selectAll(".legend-item")
+            .data(self.config.keys)
+            .join("g")
+            .attr("class", "legend-item")
+            .attr("transform", (d, i) => `translate(30, ${i*20})`);
+
+        legendItems.append("rect")
+            .attr("width", 15)
+            .attr("height", 15)
+            .style("fill", (d, i) => self.config.colors[i]);
+
+        legendItems.append("text")
+            .attr("x", 25)
+            .attr("y", 12)
+            .style("font-size", "12px")
+            .text(d => self.config.labels[d]);
+
+        self.svg.append('text')
+            .attr('class', 'plot-title')
+            .style('font-size', '10px')
+            .attr('x', self.config.width / 2)
+            .attr('y', self.config.height)
+            .attr('text-anchor', 'middle')
+            .text(`Relative C02 emissions by Sectors in ${self.data["United States"].options.year}`);
     }
 }

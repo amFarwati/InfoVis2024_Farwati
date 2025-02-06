@@ -57,28 +57,132 @@
             .state:hover {
                 fill-opacity: 0.8;
             }
+
+			.slider-container {
+				margin: 10px auto;
+				text-align: center;
+				max-width: 250px;
+			}
+
+			.year-slider {
+				-webkit-appearance: none;
+				width: 200px;
+				height: 4px;
+				background: #d3d3d3;
+				outline: none;
+				border-radius: 2px;
+			}
+
+			.year-slider::-webkit-slider-thumb {
+				-webkit-appearance: none;
+				appearance: none;
+				width: 15px;
+				height: 15px;
+				background: #4CAF50;
+				cursor: pointer;
+				border-radius: 50%;
+				transition: background .2s;
+			}
+
+			.year-slider::-moz-range-thumb {
+				width: 15px;
+				height: 15px;
+				background: #4CAF50;
+				cursor: pointer;
+				border-radius: 50%;
+				border: none;
+			}
+
+			.year-slider::-webkit-slider-thumb:hover {
+				background: #45a049;
+			}
+
+			.year-display {
+				font-size: 12px;
+				color: #666;
+				margin-top: 5px;
+				font-family: monospace;
+			}
+
+            .sub-container {
+                display: flex;
+                flex-direction: column;
+                justify-content: space-between;
+                gap: 20px;
+            }
+            
+            .map-controls {
+                display: flex;
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .radio-group {
+                display: flex;
+                flex-direction: column;
+                gap: 8px;
+            }
+            
+            .radio-label {
+                font-size: 12px;
+                color: #666;
+            }
         </style>
     </head>
     <body>
         <div class="container">
-            <div class="visualization-card" id="map-container">
+            <div class="visualization-card">
                 <h2 class="card-title">CO2 Emissions by State</h2>
-                <svg id="map"></svg>
+                <div class="sub-container">
+                    <svg id="map"></svg>
+                    
+                    <div class="map-controls">
+                        <div class="radio-group">
+                            <h3>Carbon dioxide emissions sectors</h3>
+                            <label class="radio-label">
+                                <input type="radio" name="sector" value="CC" checked>
+                                Commercial
+                            </label>
+                            <label class="radio-label">
+                                <input type="radio" name="sector" value="IC">
+                                Industrial
+                            </label>
+                            <label class="radio-label">
+                                <input type="radio" name="sector" value="TC">
+                                Transportation
+                            </label>
+                            <label class="radio-label">
+                                <input type="radio" name="sector" value="EC">
+                                Electric Power
+                            </label>
+                            <label class="radio-label">
+                                <input type="radio" name="sector" value="RC">
+                                Residential
+                            </label>
+                        </div>
+                        <div class="slider-container">
+                            <input type="range" 
+                                   min="1997" 
+                                   max="2022" 
+                                   value="2022" 
+                                   class="year-slider" 
+                                   id="yearSlider">
+                            <div class="year-display">
+                                Selected Year: <span id="yearValue">2022</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="visualization-card">
-                <h2 class="card-title">Temporal Evolution</h2>
-                <svg id="scatterplot"></svg>
-            </div>
-            <div class="visualization-card">
-                <h2 class="card-title">State Comparison</h2>
-                <svg id="barchart"></svg>
-            </div>
+                <div class="visualization-card">
+                    <h2 class="card-title">Temporal Evolution</h2>
+                    <svg id="scatterplot"></svg>
+                </div>
         </div>
 
         <script src="https://d3js.org/d3.v6.min.js"></script>
         <script src="https://d3js.org/topojson.v1.min.js"></script>
         <script src="scatterPlot.js"></script>
-        <script src="barChart.js"></script>
         <script src="choroplethMap.js"></script>
         <script src="assignment_main.js"></script>
     </body>

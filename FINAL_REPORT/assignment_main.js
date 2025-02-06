@@ -1,6 +1,6 @@
 API_KEY = "d5tLAabW0f4dSArK6vleFRxKWOySQXkmdbv7rKL0"
 
-const getRequestURL = (API_KEY = "d5tLAabW0f4dSArK6vleFRxKWOySQXkmdbv7rKL0", sectorFilter = [], stateFilter = [], start=1970, end=2022) => {
+const getRequestURL = (API_KEY = "d5tLAabW0f4dSArK6vleFRxKWOySQXkmdbv7rKL0", sectorFilter = [], stateFilter = [], start=1997, end=2022) => {
     console.log(sectorFilter, stateFilter)
     _sectorFilter = sectorFilter.reduce((acc,d) => acc+`&facets[sectorId][]=${d}`, '')
     _stateFilter = stateFilter.reduce((acc,d) => acc+`&facets[stateId][]=${d}`, '')
@@ -19,110 +19,136 @@ const fetchData = async (url) => {
     }
 };
 
-CO2_EMISSION_FIELD = ["CC","IC","TC","TT","EC","RC"]
-
-const color_scale = d3.scaleOrdinal( d3.schemeCategory10 );
-color_scale.domain(['setosa','versicolor','virginica']);
-
-const linkChoroplethScatter = async (stateId, updateFct) => {
+const linkChoroplethScatter = async (stateId, sector, updateFct) => {
     console.log("Fetching data for state:", stateId);
-    const url = getRequestURL(API_KEY, [CO2_EMISSION_FIELD[0]], [stateId], 1970, 2022);
+    const url = getRequestURL(API_KEY, [sector], [stateId], 1997, 2022);
     const data = await fetchData(url);
     updateFct(data.filter(d => d.fuelId == 'TO'));
 };
 
-const linkYearChoropleth = async (year, updateFct) => {
+const linkYearChoropleth = async (year,sector, updateFct) => {
     console.log("Fetching data for year:", year);
-    const url = getRequestURL(API_KEY, [CO2_EMISSION_FIELD[0]], [], year, year);
+    const url = getRequestURL(API_KEY, [sector], [], year, year);
     const data = await fetchData(url);
-    updateFct(data.filter(d => d.fuelId == 'TO'));
+    updateFct(data.filter(d => d.fuelId == 'TO' && d['state-name'] != "United States"));
 };
 
+const gpd_filtered = (gdp, filters) => {
+    return gdp.filter(d => {
+        return filters.every(_filter => {
+            switch(_filter.op) {
+                case '===': return d[_filter.name] === _filter.value;
+                case '!=': return d[_filter.name] != _filter.value;
+                case '>': return d[_filter.name] > _filter.value;
+                case '<': return d[_filter.name] < _filter.value;
+            }
+            d[_filter.name] === _filter.value
+        });
+    });
+};
 
 ///////////////////////////////////////////////////////////////
+
 d3.json("https://d3-geomap.github.io/d3-geomap/topojson/countries/USA.json")
 .then(topojson => {
-    
-    const scatterPlot = new ScatterPlot( {
-        parent: '#scatterplot',
-        width: 500,
-        height: 300,
-        margin: {top:10, right:10, bottom:50, left:50},
-        title: 'CO2 over years',
-        xdata: 'period',
-        ydata: 'value',
-        xlabel: 'Years',
-        ylabel: 'C02 (million metric tons)',
-        color: 'red',
-        type: 'line'
-    });
+    d3.csv("https://amfarwati.github.io/InfoVis2024_Farwati/FINAL_REPORT/SAGDP1__ALL_AREAS_1997_2023.csv")
+    .then(GDP => {
 
-    const choropleth = new ChoroplethMap(
-        {
-        parent: "#map",
-        width: 700,
-        height: 700,
-        onclick: (stateId) => {linkChoroplethScatter(stateId, (e) => scatterPlot.updateDataset(e))}
-        }, 
-        topojson
-    );
+        current_year = 2022;
+        current_sector = 'CC';
+        current_state = 'CA';
 
-    linkChoroplethScatter('CA',(e) => scatterPlot.updateDataset(e));
-    linkYearChoropleth(2022, (e) => choropleth.updateDataset(e));
+        formated_gdp = GDP.filter(d => d.Description == "Real GDP (millions of chained 2017 dollars) 1/")
+            .reduce((acc, d) => {
+                const dic = [];
+                for(let i = 1997; i < 2024; i++) {
+                    dic.push({
+                        'sector-name': d.GeoName,
+                        'value-units': "Billions of chained 2017 dollars",
+                        'period': i,
+                        'value': parseInt(d[i]/10)/100
+                    });
+                }
+                return [...acc, ...dic];
+            }, []);
+
+///////////////////////////////////////////////////////////////
+
+        const scatterPlot = new ScatterPlot2_list( {
+            parent: '#scatterplot',
+            width: 500,
+            height: 300,
+            margin: {top:10, right:50, bottom:50, left:50},
+            xdata: 'period',
+            ydata: 'value',
+            xformat: d3.format("d"),
+            yformat: d3.format(".2s"),
+            xlabel: 'Years',
+            ylabel: 'C02 (million metric tons)',
+            color: 'red',
+            ydata2: 'value',
+            yformat2: d3.format(".2s"),
+            ylabel2: 'GDP (Billions of chained 2017 dollars)',
+            color2: "green",
+            title:"CO2 Emissions and GDP regarding years",
+            type: 'line'
+        });
+
+        const choropleth = new ChoroplethMap(
+            {
+            parent: "#map",
+            width: 500,
+            height: 500,
+            onclick: (stateId, stateName) => {
+                current_state = stateId;
+                linkChoroplethScatter(current_state, current_sector, (e) => scatterPlot.updateDataset(e, gpd_filtered(formated_gdp, 
+                    [{
+                        name: 'sector-name',
+                        value: stateName,
+                        op:"==="
+                        },
+                        {
+                        name: 'period',
+                        value: 2023,
+                        op:"<"
+                        }]
+                    )))
+                }
+            }, 
+            topojson
+        );
+///////////////////////////////////////////////////////////////
+
+        linkYearChoropleth(current_year, current_sector, (e) => choropleth.updateDataset(e));
+        linkChoroplethScatter(current_state, current_sector,(e) => scatterPlot.updateDataset(e, gpd_filtered(formated_gdp, [{
+            name: 'sector-name',
+            value: 'California',
+            op:"==="
+            },
+            {
+            name: 'period',
+            value: 2023,
+            op:"<"
+        }])));
+
+        const slider = document.getElementById('yearSlider');
+        const yearValue = document.getElementById('yearValue');
+        const radioButtons = document.getElementsByName('sector');
+        
+        slider.oninput = function() {
+            yearValue.textContent = this.value;
+            current_year = this.value;
+            linkYearChoropleth(current_year, current_sector, (e) => choropleth.updateDataset(e));
+        }
+
+        radioButtons.forEach(radio => {
+            radio.onchange = function() {
+                current_sector = this.value;
+                linkYearChoropleth(current_year, current_sector, (e) => choropleth.updateDataset(e));
+                linkChoroplethScatter(current_state, current_sector, (e) => scatterPlot.updateDataset(e,null));
+            }
+        });
+    })
 });
 
-
-
-
 ///////////////////////////////////////////////////////////////
-/* fetch(getRequestURL(API_KEY, [CO2_EMISSION_FIELD[0]],["CA"],1970,2022), {
-    method: 'GET',
-    headers: {
-        'Accept': 'application/json'
-    }
-})
-.then(response => {
-    if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    return response.json();
-})
-.then(data => {
-    if (data.response && data.response.data) {
-        console.log("scatterplot", data.response.data);
-        
-        scatter_plot.update();
-    }
-})
-.catch(error => {
-    console.error('Erreur:', error);
-}); */
-///////////////////////////////////////////////////////////////
-/* fetch(getRequestURL(API_KEY, [CO2_EMISSION_FIELD[0]],[],2022), {
-    method: 'GET',
-    headers: {
-        'Accept': 'application/json'
-    }
-})
-.then(response => {
-    if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    return response.json();
-})
-.then(data => {
-    if (data.response && data.response.data) {
-        console.log(data.response.data);
-        const bar_chart = new BarChart( {
-            parent: '#barchart',
-            width: 256,
-            height: 256,
-            margin: {top:10, right:10, bottom:50, left:50},
-            cscale: color_scale
-        }, sampleData );
-        bar_chart.update();
-    }
-})
-.catch(error => {
-    console.error('Erreur:', error);
-}); */

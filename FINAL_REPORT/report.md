@@ -17,6 +17,6 @@ Zoom et filtrage pour explorer différentes périodes et secteurs.
 Lier les vues : Cliquer sur un secteur dans le scatterplot pourrait mettre en surbrillance les zones correspondantes dans le linechart.
 
 datasets :
-https://apps.bea.gov/iTable/?reqid=150&step=2&isuri=1&categories=gdpxind&_gl=1*15aljkv*_ga*MTgxNzAxNzAyOS4xNzM4NzUzNDEz*_ga_J4698JNNFT*MTczODc1MzQxMy4xLjEuMTczODc1MzQzMi40MS4wLjA.#eyJhcHBpZCI6MTUwLCJzdGVwcyI6WzEsMiwzXSwiZGF0YSI6W1siY2F0ZWdvcmllcyIsIkdkcHhJbmQiXSxbIlRhYmxlX0xpc3QiLCIxNSJdXX0=
+https://apps.bea.gov/regional/downloadzip.htm?_gl=1*1mcyc00*_ga*MTgxNzAxNzAyOS4xNzM4NzUzNDEz*_ga_J4698JNNFT*MTczODc2NDgzOC4yLjEuMTczODc2NDkyMy41NC4wLjA.
 
 https://climatetrace.org/data
